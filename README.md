@@ -15,6 +15,7 @@
 ## 🔥 Features
 Why is this the **Best of the Best**? 
 
+- 🎯 **High-Profile Smart Targeting (v2.0):** Want to connect exclusively with top-tier individuals? Enable High-Profile mode to automatically search and connect with CEOs, Founders, and Influencers based on connection count!
 - 🕵️ **100% Human-like Behavior:** Unlike traditional APIs or headless scrapers, this bot controls a real, visible browser window. It literally scrolls and clicks exactly like a human would.
 - ⏱️ **Randomized Safe Delays:** To avoid tripping any server alarms, it waits for dynamic, highly randomized amounts of time between every single click.
 - 🔑 **Auto Login Securely:** Logs you in automatically using credentials strictly stored in your local `.env` file! No more annoying manual logins or captcha struggles.
@@ -45,8 +46,12 @@ LINKEDIN_EMAIL=your_email@domain.com
 LINKEDIN_PASSWORD=your_super_secret_password
 ```
 
-**4. Adjust Bot Safety Limits (Optional)**
-You can edit the `config.js` file to change how many people the bot should connect with in one session, or tweak the human-like delays. By default, it follows an extremely safe threshold of 50 actions per run and waits 5 to 15 seconds per click.
+**4. Adjust Bot Safety & Targeting Limits (Optional)**
+Edit `config.js` to change your targeting settings or human-like delays:
+- **`MAX_ACTIONS_PER_RUN`**: Max actions per session (default incredibly safe: 50).
+- **`HIGH_PROFILE_MODE`**: Toggle `true` to search for high-value targets (CEOs etc) or `false` to just connect with people on your "My Network" page.
+- **`HIGH_PROFILE_KEYWORDS`**: The job titles the bot should search for.
+- **`HEADLINE_FILTER`**: Optionally only connect with targets whose headline contains specific words (e.g. `['Tech', 'Startup']`).
 
 ---
 

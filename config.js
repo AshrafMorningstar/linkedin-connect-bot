@@ -15,5 +15,29 @@ module.exports = {
     SHORT_MAX_DELAY_MS: 3500,
 
     // LinkedIn My Network URL (where "Connect" and "Follow" suggestions usually live)
-    NETWORK_URL: 'https://www.linkedin.com/mynetwork/'
+    NETWORK_URL: 'https://www.linkedin.com/mynetwork/',
+
+    // ─── HIGH-PROFILE SMART TARGETING ────────────────────────────────────────
+    // Set to true to skip the My Network page and instead target high-profile
+    // people from LinkedIn Search results (CEOs, Founders, Influencers, etc.)
+    HIGH_PROFILE_MODE: true,
+
+    // Job title keywords to search for. The bot will cycle through each one.
+    // These produce the richest results on LinkedIn Search.
+    HIGH_PROFILE_KEYWORDS: [
+        'CEO',
+        'Founder',
+        'Co-Founder',
+        'Entrepreneur',
+        'CTO',
+        'Managing Director',
+        'Venture Capital',
+        'Startup',
+        'Investor',
+        'LinkedIn Influencer',
+    ],
+
+    // Optional: only connect if the person's headline contains one of these words.
+    // Leave empty [] to disable this filter and connect with all search results.
+    HEADLINE_FILTER: [],
 };

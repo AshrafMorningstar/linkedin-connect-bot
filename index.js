@@ -12,15 +12,43 @@ const delay = (min, max) => {
     return new Promise(resolve => setTimeout(resolve, time));
 };
 
+// Build a LinkedIn people search URL for a given keyword, sorted by most connections first
+function buildSearchUrl(keyword) {
+    const encoded = encodeURIComponent(keyword);
+    return `https://www.linkedin.com/search/results/people/?keywords=${encoded}&origin=GLOBAL_SEARCH_HEADER&sortBy=CONNECTIONS`;
+}
+
+// Handle the "Send invitation" popup after clicking Connect
+async function handleConnectPopup(page) {
+    try {
+        const sendWithoutNote = await page.waitForSelector('button:has-text("Send without a note")', { timeout: 3000 }).catch(() => null);
+        if (sendWithoutNote) {
+            console.log('   Note popup detected. Clicking "Send without a note"...');
+            await delay(1000, 2000);
+            await sendWithoutNote.click();
+            return;
+        }
+        const sendBtn = await page.waitForSelector('button:has-text("Send")', { timeout: 1000 }).catch(() => null);
+        if (sendBtn) {
+            console.log('   Send popup detected. Clicking "Send"...');
+            await delay(1000, 2000);
+            await sendBtn.click();
+        }
+    } catch (e) {
+        // No popup needed
+    }
+}
+
 async function main() {
     console.log('Starting LinkedIn Auto Connect & Follow Bot...');
+    if (config.HIGH_PROFILE_MODE) {
+        console.log('🎯 HIGH-PROFILE MODE ENABLED — Targeting top influencers, CEOs & founders!');
+    }
+
+    let browser = await chromium.launch({ headless: false });
+
+    // Restore or create browser context
     let context;
-    let browser;
-
-    // Launch browser (not headless so we can see what's happening)
-    browser = await chromium.launch({ headless: false });
-
-    // Check if we have saved session state
     if (fs.existsSync(STATE_FILE)) {
         console.log('Found saved session. Restoring...');
         context = await browser.newContext({ storageState: STATE_FILE });
@@ -31,21 +59,18 @@ async function main() {
 
     const page = await context.newPage();
 
-    // If no state file, auto-login
+    // Auto-login if no saved session
     if (!fs.existsSync(STATE_FILE)) {
         await page.goto('https://www.linkedin.com/login');
         console.log('Logging in automatically...');
 
-        await delay(1000, 2000); // small delay to ensure inputs are loaded
+        await delay(1000, 2000);
         await page.fill('#username', process.env.LINKEDIN_EMAIL || '');
         await page.fill('#password', process.env.LINKEDIN_PASSWORD || '');
-
         await delay(1000, 2000);
         await page.click('button[type="submit"]');
 
-        console.log('Waiting for successful login (navigating away from login page)...');
-
-        // Wait until URL changes from login
+        console.log('Waiting for successful login...');
         await page.waitForNavigation({ url: /^(?!.*login).*$/, timeout: 60000 });
 
         console.log('Login successful! Saving session for future use.');
@@ -53,106 +78,172 @@ async function main() {
         await context.storageState({ path: STATE_FILE });
     }
 
-    // Navigate to the Network page
-    console.log(`Navigating to ${config.NETWORK_URL}...`);
-    await page.goto(config.NETWORK_URL, { waitUntil: 'domcontentloaded' });
-
     let actionCount = 0;
 
-    // Wait a bit for the page to fully render
-    await delay(config.MIN_DELAY_MS, config.MAX_DELAY_MS);
+    if (config.HIGH_PROFILE_MODE) {
+        // ── HIGH-PROFILE MODE: Search for CEOs, Founders, Influencers etc. ──────
+        for (const keyword of config.HIGH_PROFILE_KEYWORDS) {
+            if (actionCount >= config.MAX_ACTIONS_PER_RUN) break;
 
-    while (actionCount < config.MAX_ACTIONS_PER_RUN) {
-        console.log('Scanning for action buttons ("Connect" and "Follow")...');
-
-        // Find both "Connect" and "Follow" buttons on the standard network page
-        // LinkedIn UI varies, usually buttons contain exact texts
-        const connectButtons = await page.$$('button:has-text("Connect")');
-        const followButtons = await page.$$('button:has-text("Follow")');
-
-        // Combine arrays and filter out buttons that might not be visible or relevant ones 
-        // Note: we just pool all found interactable buttons
-        const actionButtons = [...connectButtons, ...followButtons];
-
-        if (actionButtons.length === 0) {
-            console.log('No action buttons found on the current screen.');
-            console.log('Scrolling down to load more profiles...');
-            await page.evaluate(() => window.scrollBy(0, window.innerHeight));
-
+            const url = buildSearchUrl(keyword);
+            console.log(`\n🔍 Searching for high-profile "${keyword}" profiles (sorted by most connections)...`);
+            await page.goto(url, { waitUntil: 'domcontentloaded' });
             await delay(config.MIN_DELAY_MS, config.MAX_DELAY_MS);
 
-            const newConnect = await page.$$('button:has-text("Connect")');
-            const newFollow = await page.$$('button:has-text("Follow")');
-            if (newConnect.length === 0 && newFollow.length === 0) {
-                console.log('Still no buttons found after scrolling. Reached end of currently available suggestions.');
-                break;
-            }
-            continue;
-        }
+            let pageScrolls = 0;
+            const MAX_SCROLLS_PER_KEYWORD = 3;
 
-        for (const button of actionButtons) {
-            if (actionCount >= config.MAX_ACTIONS_PER_RUN) {
-                break;
-            }
+            while (actionCount < config.MAX_ACTIONS_PER_RUN && pageScrolls <= MAX_SCROLLS_PER_KEYWORD) {
 
-            try {
-                // Skip elements that became detached or hidden
-                const isVisible = await button.isVisible();
-                if (!isVisible) continue;
+                const connectBtns = await page.$$('button:has-text("Connect")');
+                const followBtns = await page.$$('button:has-text("Follow")');
+                const allBtns = [...connectBtns, ...followBtns];
 
-                // Get button text to log what action we are taking
-                const buttonText = await button.innerText();
-                const actionType = buttonText.includes('Connect') ? 'Connect' : 'Follow';
+                if (allBtns.length === 0) {
+                    console.log('No buttons on current view, scrolling...');
+                } else {
+                    console.log(`Found ${allBtns.length} action buttons on screen.`);
+                }
 
-                await button.scrollIntoViewIfNeeded();
-                await delay(config.SHORT_MIN_DELAY_MS, config.SHORT_MAX_DELAY_MS);
+                for (const button of allBtns) {
+                    if (actionCount >= config.MAX_ACTIONS_PER_RUN) break;
 
-                console.log(`Clicking ${actionType} button (${actionCount + 1}/${config.MAX_ACTIONS_PER_RUN})...`);
-                await button.click();
-
-                // Handling popups usually happens only on 'Connect'
-                if (actionType === 'Connect') {
                     try {
-                        // LinkedIn sometimes prompts "You can add a note to personalize..."
-                        // We check if the modal appeared by looking for "Send without a note" or "Send"
-                        // Or similarly titled buttons in dialogs.
+                        const isVisible = await button.isVisible();
+                        if (!isVisible) continue;
 
-                        const sendWithoutNoteButton = await page.waitForSelector('button:has-text("Send without a note")', { timeout: 3000 }).catch(() => null);
-                        if (sendWithoutNoteButton) {
-                            console.log('Note popup detected. Clicking "Send without a note"...');
-                            await delay(config.SHORT_MIN_DELAY_MS, config.SHORT_MAX_DELAY_MS);
-                            await sendWithoutNoteButton.click();
-                        } else {
-                            // Some UIs just have a "Send" button
-                            const sendButton = await page.waitForSelector('button:has-text("Send")', { timeout: 1000 }).catch(() => null);
-                            if (sendButton) {
-                                console.log('Standard Send popup detected. Clicking "Send"...');
-                                await delay(config.SHORT_MIN_DELAY_MS, config.SHORT_MAX_DELAY_MS);
-                                await sendButton.click();
+                        const buttonText = await button.innerText().catch(() => '');
+                        const actionType = buttonText.trim().startsWith('Connect') ? 'Connect' : 'Follow';
+
+                        // Extract profile name and headline from the enclosing card
+                        let profileName = 'Unknown';
+                        let profileHeadline = '';
+                        try {
+                            const card = await button.evaluateHandle(el => {
+                                let node = el;
+                                for (let i = 0; i < 10; i++) {
+                                    node = node.parentElement;
+                                    if (node && node.tagName === 'LI') return node;
+                                }
+                                return null;
+                            });
+                            if (card) {
+                                profileName = await card.$eval(
+                                    '.entity-result__title-text, span[aria-hidden="true"]',
+                                    el => el.innerText.trim()
+                                ).catch(() => 'Unknown');
+                                profileHeadline = await card.$eval(
+                                    '.entity-result__primary-subtitle, .entity-result__summary',
+                                    el => el.innerText.trim()
+                                ).catch(() => '');
+                            }
+                        } catch (_) { }
+
+                        // Optional headline filter
+                        if (config.HEADLINE_FILTER.length > 0) {
+                            const headlineLower = profileHeadline.toLowerCase();
+                            const matches = config.HEADLINE_FILTER.some(f => headlineLower.includes(f.toLowerCase()));
+                            if (!matches) {
+                                console.log(`   ⏭️  Skipping "${profileName}" — headline doesn't match filter`);
+                                continue;
                             }
                         }
-                    } catch (e) {
-                        // Normal if no connection note prompt appears
-                        console.log('No connection note prompt required.');
+
+                        await button.scrollIntoViewIfNeeded();
+                        await delay(config.SHORT_MIN_DELAY_MS, config.SHORT_MAX_DELAY_MS);
+
+                        console.log(`\n🤝 [${actionCount + 1}/${config.MAX_ACTIONS_PER_RUN}] ${actionType} → "${profileName}"`);
+                        if (profileHeadline) console.log(`   📌 ${profileHeadline}`);
+
+                        await button.click();
+
+                        if (actionType === 'Connect') {
+                            await handleConnectPopup(page);
+                        }
+
+                        actionCount++;
+                        console.log(`   ✅ Success! Total actions: ${actionCount}`);
+
+                        const waitTime = Math.floor(Math.random() * (config.MAX_DELAY_MS - config.MIN_DELAY_MS + 1)) + config.MIN_DELAY_MS;
+                        console.log(`   ⏳ Waiting ${(waitTime / 1000).toFixed(1)}s before next action...`);
+                        await delay(waitTime, waitTime);
+
+                    } catch (err) {
+                        console.error('   ⚠️  Error on button, skipping:', err.message);
+                        await delay(config.SHORT_MIN_DELAY_MS, config.SHORT_MAX_DELAY_MS);
                     }
                 }
 
-                actionCount++;
-                console.log(`Successfully performed action: ${actionType}! Total: ${actionCount}`);
+                // Scroll down to load more results for this keyword
+                if (actionCount < config.MAX_ACTIONS_PER_RUN) {
+                    console.log(`\nScrolling to load more "${keyword}" results (scroll ${pageScrolls + 1}/${MAX_SCROLLS_PER_KEYWORD})...`);
+                    await page.evaluate(() => window.scrollBy(0, window.innerHeight * 1.5));
+                    await delay(config.MIN_DELAY_MS, config.MAX_DELAY_MS);
+                    pageScrolls++;
+                }
+            }
+        }
 
-                // Crucial safeguard: wait a long random time before the next action
-                const waitTime = Math.floor(Math.random() * (config.MAX_DELAY_MS - config.MIN_DELAY_MS + 1)) + config.MIN_DELAY_MS;
-                console.log(`Waiting ${waitTime / 1000} seconds before next action to simulate human behavior safety...`);
-                await delay(waitTime, waitTime);
+    } else {
+        // ── STANDARD MODE: My Network page ──────────────────────────────────────
+        console.log(`Navigating to ${config.NETWORK_URL}...`);
+        await page.goto(config.NETWORK_URL, { waitUntil: 'domcontentloaded' });
+        await delay(config.MIN_DELAY_MS, config.MAX_DELAY_MS);
 
-            } catch (err) {
-                console.error('Error processing a button, skipping to next one:', err.message);
-                await delay(config.SHORT_MIN_DELAY_MS, config.SHORT_MAX_DELAY_MS);
+        while (actionCount < config.MAX_ACTIONS_PER_RUN) {
+            console.log('Scanning for action buttons ("Connect" and "Follow")...');
+
+            const connectButtons = await page.$$('button:has-text("Connect")');
+            const followButtons = await page.$$('button:has-text("Follow")');
+            const actionButtons = [...connectButtons, ...followButtons];
+
+            if (actionButtons.length === 0) {
+                console.log('No action buttons found. Scrolling down...');
+                await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+                await delay(config.MIN_DELAY_MS, config.MAX_DELAY_MS);
+
+                const nc = await page.$$('button:has-text("Connect")');
+                const nf = await page.$$('button:has-text("Follow")');
+                if (nc.length === 0 && nf.length === 0) {
+                    console.log('No more profiles available. Ending run.');
+                    break;
+                }
+                continue;
+            }
+
+            for (const button of actionButtons) {
+                if (actionCount >= config.MAX_ACTIONS_PER_RUN) break;
+                try {
+                    const isVisible = await button.isVisible();
+                    if (!isVisible) continue;
+
+                    const buttonText = await button.innerText();
+                    const actionType = buttonText.includes('Connect') ? 'Connect' : 'Follow';
+
+                    await button.scrollIntoViewIfNeeded();
+                    await delay(config.SHORT_MIN_DELAY_MS, config.SHORT_MAX_DELAY_MS);
+
+                    console.log(`Clicking ${actionType} (${actionCount + 1}/${config.MAX_ACTIONS_PER_RUN})...`);
+                    await button.click();
+
+                    if (actionType === 'Connect') await handleConnectPopup(page);
+
+                    actionCount++;
+                    console.log(`✅ Done! Total: ${actionCount}`);
+
+                    const waitTime = Math.floor(Math.random() * (config.MAX_DELAY_MS - config.MIN_DELAY_MS + 1)) + config.MIN_DELAY_MS;
+                    console.log(`Waiting ${(waitTime / 1000).toFixed(1)}s...`);
+                    await delay(waitTime, waitTime);
+
+                } catch (err) {
+                    console.error('Error on button, skipping:', err.message);
+                    await delay(config.SHORT_MIN_DELAY_MS, config.SHORT_MAX_DELAY_MS);
+                }
             }
         }
     }
 
-    console.log(`\nFinished! Total accounts connected/followed: ${actionCount}`);
+    console.log(`\n🎉 Finished! Total accounts connected/followed: ${actionCount}`);
     await browser.close();
 }
 

@@ -185,7 +185,12 @@ async function main() {
                 if (config.VIEW_PROFILE_BEFORE_CONNECT && p.profileUrl) {
                     console.log(`👀 Visiting profile: ${p.name}...`);
                     await page.goto(p.profileUrl, { waitUntil: 'domcontentloaded' });
-                    await delay(4000, 8000); // Spend some "reading" time
+
+                    // Human behavior: scroll down a bit to "read" the profile
+                    await page.evaluate(() => window.scrollBy(0, 400));
+                    await delay(2000, 4000);
+                    await page.evaluate(() => window.scrollBy(0, 300));
+                    await delay(3000, 6000); // Spend some "reading" time
                 }
 
                 // Check for connect button on profile page

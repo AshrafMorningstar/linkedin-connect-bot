@@ -22,29 +22,30 @@ module.exports = {
     // people from LinkedIn Search results (CEOs, Founders, Influencers, etc.)
     HIGH_PROFILE_MODE: true,
 
-    // Job title keywords to search for. The bot will cycle through each one.
-    // These produce the richest results on LinkedIn Search.
+    // PROFESSIONS TARGETING: Add any niche you want to dominate here!
+    // The bot will cycle through each one automatically.
     HIGH_PROFILE_KEYWORDS: [
-        'CEO',
-        'Founder',
-        'Co-Founder',
-        'Entrepreneur',
-        'CTO',
-        'Managing Director',
-        'Venture Capital',
-        'Startup',
-        'Investor',
-        'LinkedIn Influencer',
-        'IT Professional',
-        'Chartered Accountant',
-        'CA',
-        'Software Engineer',
-        'Digital Marketer',
-        'Financial Analyst',
+        // --- C-Level & Executives ---
+        'CEO', 'Founder', 'Co-Founder', 'Entrepreneur', 'Managing Director', 'Venture Capital',
+
+        // --- IT & Tech Professionals ---
+        'IT Professional', 'Software Engineer', 'CTO', 'Data Scientist', 'DevOps Engineer',
+        'Product Manager', 'Cloud Architect', 'Full Stack Developer',
+
+        // --- Finance & Legal ---
+        'Chartered Accountant', 'CA', 'Financial Analyst', 'Investment Banker', 'Legal Counsel',
+
+        // --- Marketing & Sales ---
+        'Digital Marketer', 'Growth Hacker', 'Sales Director', 'Marketing Manager', 'SEO Expert',
+
+        // --- HR & Engagement ---
+        'HR Professional', 'Talent Acquisition', 'Recruiter', 'Community Manager', 'Chatter account',
+
+        // --- General Professional ---
+        'Consultant', 'Project Manager', 'Business Development'
     ],
 
-    // Optional: only connect if the person's headline contains one of these words.
-    // Leave empty [] to disable this filter and connect with all search results.
+    // Global filters for headlines
     HEADLINE_FILTER: [],
 
     // ─── 2026 PRO AUTOMATION FEATURES ────────────────────────────────────────
@@ -58,10 +59,9 @@ module.exports = {
     // WORK HOURS: Only performs actions during these hours (24h format).
     BOT_WORK_HOURS: { start: 9, end: 17 },
 
-    // PERSONALIZED MESSAGING: Dynamic variables are replaced with profile data.
-    // Use {{firstName}}, {{company}}, {{jobTitle}}.
+    // INVITATION SETTINGS: Personalized messages increase acceptance by 35%!
     ENABLE_PERSONALIZED_MESSAGING: true,
-    INVITATION_MESSAGE_TEMPLATE: "Hi {{firstName}}, I noticed your impressive work at {{company}}. As a fellow professional in the {{jobTitle}} sector, I'd love to connect and keep up with your insights! Cheers.",
+    INVITATION_MESSAGE_TEMPLATE: "Hi {{firstName}}, I've been following your progress at {{company}} and am consistently impressed by your insights in the {{jobTitle}} field. Would love to connect and keep in touch! Best, [Your Name]",
 
     // SEQUENCE FLOW: View profile before connecting (highly recommended for safety).
     VIEW_PROFILE_BEFORE_CONNECT: true,

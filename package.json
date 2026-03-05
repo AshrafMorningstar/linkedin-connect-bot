@@ -1,14 +1,24 @@
 {
   "name": "linkedin-connect-bot",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "🚀 The absolute best, safest, and most human-like LinkedIn auto connect & follow bot — now with High-Profile Smart Targeting!",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "linkedin",
+    "bot",
+    "automation",
+    "connect",
+    "follow",
+    "playwright",
+    "networking",
+    "high-profile"
+  ],
+  "author": "Ashraf Morningstar",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "dotenv": "^17.3.1",

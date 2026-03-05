@@ -35,6 +35,12 @@ module.exports = {
         'Startup',
         'Investor',
         'LinkedIn Influencer',
+        'IT Professional',
+        'Chartered Accountant',
+        'CA',
+        'Software Engineer',
+        'Digital Marketer',
+        'Financial Analyst',
     ],
 
     // Optional: only connect if the person's headline contains one of these words.

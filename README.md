@@ -12,10 +12,8 @@
 
 ---
 
-## 🔥 Features
-Why is this the **Best of the Best**? 
-
-- 🚀 **2026 Pro Automation (v3.0):** The most advanced automation engine yet. Includes:
+- 🚀 **2026 Pro Automation (v3.1):** The most advanced automation engine yet. Includes:
+  - 🏺 **Niche & Profession Targeting:** Target anyone specifically, from CEOs and CTOs to **IT Professionals, CAs (Chartered Accountants)**, and more.
   - 🌡️ **Warm-up Mode:** Gradually increases your daily limits to mimic organic account growth.
   - ⏰ **Work Hours Scheduling:** Intelligent scheduling that only connects during your local business hours.
   - ✍️ **Personalized Messaging:** Dynamic variables (`{{firstName}}`, `{{company}}`) to draft unique invites.

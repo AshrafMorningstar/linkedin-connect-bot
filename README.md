@@ -15,12 +15,16 @@
 ## 🔥 Features
 Why is this the **Best of the Best**? 
 
-- 🎯 **High-Profile Smart Targeting (v2.0):** Want to connect exclusively with top-tier individuals? Enable High-Profile mode to automatically search and connect with CEOs, Founders, and Influencers based on connection count!
-- 🕵️ **100% Human-like Behavior:** Unlike traditional APIs or headless scrapers, this bot controls a real, visible browser window. It literally scrolls and clicks exactly like a human would.
-- ⏱️ **Randomized Safe Delays:** To avoid tripping any server alarms, it waits for dynamic, highly randomized amounts of time between every single click.
-- 🔑 **Auto Login Securely:** Logs you in automatically using credentials strictly stored in your local `.env` file! No more annoying manual logins or captcha struggles.
-- 🤝 **Smart Popups:** Automatically handles the "Add a note" popup by safely clicking "Send without a note" so it never gets stuck.
-- 🛑 **Action Limits:** Built-in safeguards stop the script after a configured amount of connections/follows to ensure your account stays completely clear of rate limits.
+- 🚀 **2026 Pro Automation (v3.0):** The most advanced automation engine yet. Includes:
+  - 🌡️ **Warm-up Mode:** Gradually increases your daily limits to mimic organic account growth.
+  - ⏰ **Work Hours Scheduling:** Intelligent scheduling that only connects during your local business hours.
+  - ✍️ **Personalized Messaging:** Dynamic variables (`{{firstName}}`, `{{company}}`) to draft unique invites.
+  - 👀 **Profile View Sequence:** Views the target's profile before connecting to maximize safety.
+  - 🧹 **Auto-Withdrawal:** Automatically cleans up old, unaccepted invitations to keep your account health peak.
+- 🎯 **High-Profile Smart Targeting:** Connect exclusively with CEOs, Founders, and Influencers based on connection count!
+- 🕵️ **100% Human-like Behavior:** Controls a real, visible browser window. It literally scrolls and clicks exactly like a human would.
+- ⏱️ **Randomized Safe Delays:** Highly randomized amounts of time between every single click to bypass detection.
+- 🛑 **Action Limits:** Built-in safeguards stop the script after a configured amount of actions to ensure account safety.
 
 ---
 

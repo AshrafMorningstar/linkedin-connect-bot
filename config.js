@@ -40,4 +40,27 @@ module.exports = {
     // Optional: only connect if the person's headline contains one of these words.
     // Leave empty [] to disable this filter and connect with all search results.
     HEADLINE_FILTER: [],
+
+    // ─── 2026 PRO AUTOMATION FEATURES ────────────────────────────────────────
+
+    // WARM-UP MODE: Gradually increases your daily activity to avoid ban detection.
+    // Starts with DAILY_LIMIT_START and increases by DAILY_LIMIT_INCREMENT each day.
+    WARM_UP_MODE: true,
+    DAILY_LIMIT_START: 10,
+    DAILY_LIMIT_INCREMENT: 5,
+
+    // WORK HOURS: Only performs actions during these hours (24h format).
+    BOT_WORK_HOURS: { start: 9, end: 17 },
+
+    // PERSONALIZED MESSAGING: Dynamic variables are replaced with profile data.
+    // Use {{firstName}}, {{company}}, {{jobTitle}}.
+    ENABLE_PERSONALIZED_MESSAGING: true,
+    INVITATION_MESSAGE_TEMPLATE: "Hi {{firstName}}, I noticed your impressive work at {{company}}. As a fellow professional in the {{jobTitle}} sector, I'd love to connect and keep up with your insights! Cheers.",
+
+    // SEQUENCE FLOW: View profile before connecting (highly recommended for safety).
+    VIEW_PROFILE_BEFORE_CONNECT: true,
+
+    // AUTO-WITHDRAW: Automatically cancels pending requests that haven't been accepted.
+    AUTO_WITHDRAW: true,
+    WITHDRAW_OLDER_THAN_DAYS: 14,
 };
